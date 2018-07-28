@@ -2,6 +2,11 @@
 
 Exposes Speedtest metrics to Prometheus.
 
+[![](https://images.microbadger.com/badges/image/foxboxsnet/speedtest_exporter.svg)](https://microbadger.com/images/foxboxsnet/speedtest_exporter "")
+[![](https://img.shields.io/docker/stars/foxboxsnet/speedtest_exporter.svg)](https://hub.docker.com/r/foxboxsnet/speedtest_exporter/ 'DockerHub')
+[![](https://img.shields.io/docker/pulls/foxboxsnet/speedtest_exporter.svg)](https://hub.docker.com/r/foxboxsnet/speedtest_exporter/ 'DockerHub')
+
+
 ## Configuration
 
 This exporter is configurable via environment variables:
