@@ -102,7 +102,7 @@ if __name__ == '__main__':
         'speedtest_download_bits',
         'download bandwidth in (bit/s)',
         [
-            'instance', 'client_isp', 'client_country',
+            'ip', 'client_isp', 'client_country',
             'server_name', 'server_id', 'server_country', 'server_sponsor'
         ]
     )
@@ -111,7 +111,7 @@ if __name__ == '__main__':
         'speedtest_upload_bits',
         'upload bandwidth in (bit/s)',
         [
-            'instance', 'client_isp', 'client_country',
+            'ip', 'client_isp', 'client_country',
             'server_name', 'server_id', 'server_country', 'server_sponsor'
         ]
     )
@@ -120,7 +120,7 @@ if __name__ == '__main__':
         'speedtest_download_bytes',
         'download usage capacity (bytes)',
         [
-            'instance', 'client_isp', 'client_country',
+            'ip', 'client_isp', 'client_country',
             'server_name', 'server_id', 'server_country', 'server_sponsor'
         ]
     )
@@ -129,7 +129,7 @@ if __name__ == '__main__':
         'speedtest_upload_bytes',
         'upload usage capacity (bytes)',
         [
-            'instance', 'client_isp', 'client_country',
+            'ip', 'client_isp', 'client_country',
             'server_name', 'server_id', 'server_country', 'server_sponsor'
         ]
     )
@@ -138,7 +138,7 @@ if __name__ == '__main__':
         'speedtest_ping',
         'icmp latency (ms)',
         [
-            'instance', 'client_isp', 'client_country',
+            'ip', 'client_isp', 'client_country',
             'server_name', 'server_id', 'server_country', 'server_sponsor'
         ]
     )
