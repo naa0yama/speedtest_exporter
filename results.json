@@ -1,0 +1,34 @@
+{
+  "client": {
+    "rating": "0",
+    "loggedin": "0",
+    "isprating": "3.7",
+    "ispdlavg": "0",
+    "ip": "126.225.90.142",
+    "isp": "Softbank BB",
+    "lon": "139.7514",
+    "ispulavg": "0",
+    "country": "JP",
+    "lat": "35.685"
+  },
+  "bytes_sent": 5242880,
+  "download": 5649262.632440399,
+  "timestamp": "2018-07-27T13:14:21.782347Z",
+  "share": null,
+  "bytes_received": 7203980,
+  "ping": 45.007,
+  "upload": 3279752.8049338055,
+  "server": {
+    "latency": 45.007,
+    "name": "Bunkyo",
+    "url": "http://speed.coe.ad.jp/upload.php",
+    "country": "Japan",
+    "lon": "139.7522",
+    "cc": "JP",
+    "host": "speed.coe.ad.jp:8080",
+    "sponsor": "IPA CyberLab",
+    "lat": "35.7081",
+    "id": "14623",
+    "d": 2.569618530339375
+  }
+}
