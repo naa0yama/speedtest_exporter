@@ -207,27 +207,27 @@ def main():
         speedtest_download_bits.labels(
             st_json['client']['ip'], st_json['client']['isp'], st_json['client']['country'],
             st_json['server']['name'], st_json['server']['id'], st_json['server']['cc'], st_json['server']['sponsor']
-        ).inc(st_json['download'])
+        ).set(st_json['download'])
 
         speedtest_upload_bits.labels(
             st_json['client']['ip'], st_json['client']['isp'], st_json['client']['country'],
             st_json['server']['name'], st_json['server']['id'], st_json['server']['cc'], st_json['server']['sponsor']
-        ).inc(st_json['upload'])
+        ).set(st_json['upload'])
 
         speedtest_download_bytes.labels(
             st_json['client']['ip'], st_json['client']['isp'], st_json['client']['country'],
             st_json['server']['name'], st_json['server']['id'], st_json['server']['cc'], st_json['server']['sponsor']
-        ).inc(st_json['bytes_received'])
+        ).set(st_json['bytes_received'])
 
         speedtest_upload_bytes.labels(
             st_json['client']['ip'], st_json['client']['isp'], st_json['client']['country'],
             st_json['server']['name'], st_json['server']['id'], st_json['server']['cc'], st_json['server']['sponsor']
-        ).inc(st_json['bytes_sent'])
+        ).set(st_json['bytes_sent'])
 
         speedtest_ping.labels(
             st_json['client']['ip'], st_json['client']['isp'], st_json['client']['country'],
             st_json['server']['name'], st_json['server']['id'], st_json['server']['cc'], st_json['server']['sponsor']
-        ).inc(st_json['ping'])
+        ).set(st_json['ping'])
 
 
         speedtest_cache_interval.set(args.interval)
