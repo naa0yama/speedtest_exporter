@@ -5,8 +5,11 @@ services:
     ports:
       - 9353:9353/tcp
     image: foxboxsnet/speedtest_exporter:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     environment:
-      EXPORTER_INTERVAL: "*/20 * * * *"
+      EXPORTER_INTERVAL: "*/1 * * * *"
 
   prom:
     image: quay.io/prometheus/prometheus:latest

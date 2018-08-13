@@ -16,7 +16,7 @@ This exporter is configurable via environment variables:
 
 * `EXPORTER_LISTEN` The listen to be used by the exporter. Default `0.0.0.0`.
 * `EXPORTER_PORT` The port to be used by the exporter. Default `9353`.
-* `EXPORTER_INTERVAL` Speedtest execution interval
+* `EXPORTER_INTERVAL` Speedtest execution interval. Default `"*/20 * * * *"`
 * `EXPORTER_DEBUG` Debug mode. Default `false`
 * `EXPORTER_SERVERID` Specify a server ID to test against.
 
