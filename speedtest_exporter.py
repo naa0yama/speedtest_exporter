@@ -129,8 +129,8 @@ parser.add_argument(
     "-i",
     "--interval",
     type=str,
-    default=os.environ.get('EXPORTER_INTERVAL', '*/1 * * * *'),
-    help="interval default second (default: */1 * * * *)",
+    default=os.environ.get('EXPORTER_INTERVAL', '*/20 * * * *'),
+    help="interval default second (default: */20 * * * *)",
 )
 
 parser.add_argument(
