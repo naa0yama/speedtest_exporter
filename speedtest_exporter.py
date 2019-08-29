@@ -9,6 +9,7 @@ import argparse
 import logging
 import os
 import math
+import random
 
 
 from crontab import CronTab
@@ -31,25 +32,23 @@ def eprint(*args, **kwargs):
 
 
 class JobConfig(object):
-    """
+    u"""
     処理設定
     """
 
     def __init__(self, crontab):
-        """
+        u"""
         :type crontab: crontab.CronTab
         :param crontab: 実行時間設定
         """
-
         self._crontab = crontab
 
     def schedule(self):
-        """
+        u"""
         次回実行日時を取得する。
         :rtype: datetime.datetime
         :return: 次回実行日時を
         """
-
         crontab = self._crontab
         return datetime.now() + timedelta(
             seconds=math.ceil(
@@ -58,18 +57,17 @@ class JobConfig(object):
         )
 
     def next(self):
-        """
+        u"""
         次回実行時刻まで待機する時間を取得する。
         :rtype: long
         :retuen: 待機時間(秒)
         """
-
         crontab = self._crontab
         return math.ceil(crontab.next(default_utc=False))
 
 
 def job_controller(crontab):
-    """
+    u"""
     処理コントローラ
     :type crontab: str
     :param crontab: 実行設定
@@ -77,7 +75,6 @@ def job_controller(crontab):
     def receive_func(job):
         import functools
         @functools.wraps(job)
-
         def wrapper():
             # Start up the server to expose the metrics.
             start_http_server(args.port, args.listen)
@@ -87,8 +84,8 @@ def job_controller(crontab):
             while True:
                 try:
                     # 次実行日時を表示
-                    logging.info("-?- next running\tschedule:%s" %
-                    jobConfig.schedule().strftime("%Y-%m-%d %H:%M:%S"))
+                    strargs = jobConfig.schedule().strftime("%Y-%m-%d %H:%M:%S")
+                    logging.info("-?- next running\tschedule:%s" % strargs)
                     # 次実行時刻まで待機
                     time.sleep(jobConfig.next())
 
@@ -101,8 +98,8 @@ def job_controller(crontab):
 
                 except KeyboardInterrupt:
                     break
+            logging.info("-<- Process Done.")
 
-        logging.info("-<- Process Done.")
         return wrapper
     return receive_func
 
@@ -132,8 +129,8 @@ parser.add_argument(
     "-i",
     "--interval",
     type=str,
-    default=os.environ.get('EXPORTER_INTERVAL', '*/20 * * * *'),
-    help="interval default second (default: */20 * * * *)",
+    default=os.environ.get('EXPORTER_INTERVAL', '*/1 * * * *'),
+    help="interval default second (default: */1 * * * *)",
 )
 
 parser.add_argument(
@@ -154,7 +151,6 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-
 if args.debug == 'false':
     logging.basicConfig(
         format='%(asctime)s %(levelname)s: %(message)s',
@@ -170,58 +166,110 @@ else:
     )
     logging.debug('is when this event was logged.')
 
+logging.info('Using parser args = %r' % (args, ))
 
 speedtest_download_bits = Gauge(
     'speedtest_download_bits',
-    'download bandwidth in (bit/s)'
+    'download bandwidth in (bit/s)',
+    ['serverid'],
 )
 
 speedtest_upload_bits = Gauge(
     'speedtest_upload_bits',
-    'upload bandwidth in (bit/s)'
+    'upload bandwidth in (bit/s)',
+    ['serverid'],
 )
 
 speedtest_download_bytes = Gauge(
     'speedtest_download_bytes',
-    'download usage capacity (bytes)'
+    'download usage capacity (bytes)',
+    ['serverid'],
 )
 
 speedtest_upload_bytes = Gauge(
     'speedtest_upload_bytes',
-    'upload usage capacity (bytes)'
+    'upload usage capacity (bytes)',
+    ['serverid'],
 )
 
 speedtest_ping = Gauge(
     'speedtest_ping',
-    'icmp latency (ms)'
+    'icmp latency (ms)',
+    ['serverid'],
 )
 
 speedtest_up = Gauge(
     'speedtest_up',
-    'speedtest_exporter is up(1) or down(0)'
+    'speedtest_exporter is up(1) or down(0)',
 )
 
+logging.info('Getting closest 10 servers (by distance)')
+server_list = []
+try:
+    logging.info('Running speedtest-cli subprocess.')
 
+    s1 = subprocess.Popen([
+        'speedtest-cli', '--list'],
+        stdout=subprocess.PIPE,
+        universal_newlines=True
+    )
+    s2 = s1.communicate()
+    try:
+        lines = s2[0].strip().split('\n')
+        for line in lines:
+            try:
+                line = line.strip().split()
+                serverid = line[0]
+                distance = line[-2]
+                serverid = serverid.strip(')').strip()
+                distance = distance.strip('[').strip()
+                serverid = int(serverid)
+                distance = float(distance)
+                valid = True
+            except:
+                valid = False
+            if valid:
+                server = (distance, serverid, )
+                server_list.append(server)
+        server_list = sorted(server_list)
+        server_list = server_list[:10]
+        logging.info('Using server list: %r' % (server_list, ))
+    except:
+        pass
+except:
+    logging.warning("Couldn't get results from speedtest-cli!")
 
 
 @job_controller(args.interval)
 def job1():
-    """
+    u"""
     処理1
     """
     try:
         logging.info('Running speedtest-cli subprocess.')
 
-        if args.server == '':
+        serverid = str(args.server)
+
+        if serverid == 'random':
+            if len(server_list) == 0:
+                serverid = ''
+            else:
+                random.shuffle(server_list)
+                server = server_list[0]
+                serverid = str(server[1])
+                logging.info('Selected random server = %r' % (server, ))
+
+        logging.info('Requesting serverid = %r' % (serverid, ))
+        if serverid == '':
             s1 = subprocess.Popen([
                 'speedtest-cli', '--json'],
                 stdout=subprocess.PIPE,
                 universal_newlines=True
             )
         else:
-            logging.info('set server id: %s', args.server)
+            logging.info('set server id: %s', serverid)
             s1 = subprocess.Popen(
-                ['speedtest-cli', '--json', '--server', args.server],
+                ['speedtest-cli', '--json', '--server', serverid],
                 stdout=subprocess.PIPE,
                 universal_newlines=True
             )
@@ -257,27 +305,29 @@ def job1():
 
             speedtest_up.set(0)
 
-    except TypeError:
+    except:
         logging.warning("Couldn't get results from speedtest-cli!")
 
     logging.info('Setting gauge values.')
+    handler.flush()
 
-    speedtest_download_bits.set(st_json['download'])
-    speedtest_upload_bits.set(st_json['upload'])
-    speedtest_download_bytes.set(st_json['bytes_received'])
-    speedtest_upload_bytes.set(st_json['bytes_sent'])
-    speedtest_ping.set(st_json['ping'])
+    serverid = str(st_json['server']['id'])
+    logging.info('Used serverid = %r' % (serverid, ))
+
+    speedtest_download_bits.labels(serverid=serverid).set(st_json['download'])
+    speedtest_upload_bits.labels(serverid=serverid).set(st_json['upload'])
+    speedtest_download_bytes.labels(serverid=serverid).set(st_json['bytes_received'])
+    speedtest_upload_bytes.labels(serverid=serverid).set(st_json['bytes_sent'])
+    speedtest_ping.labels(serverid=serverid).set(st_json['ping'])
 
 
 def main():
     """
     """
-
     # ログ設定
     logging.basicConfig(
         level=logging.DEBUG,
-        format="time:%(asctime)s.%(msecs)03d\tprocess:%(process)d"
-        + "\tmessage:%(message)s",
+        format="time:%(asctime)s.%(msecs)03d\tprocess:%(process)d" + "\tmessage:%(message)s",
         datefmt="%Y-%m-%d %H:%M:%S"
     )
 
@@ -293,6 +343,7 @@ def main():
         p.join()
     except KeyboardInterrupt:
         pass
+    handler.flush()
 
 
 if __name__ == "__main__":
