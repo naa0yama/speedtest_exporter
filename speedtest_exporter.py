@@ -81,6 +81,13 @@ def job_controller(crontab):
             # Generate some requests.
             jobConfig = JobConfig(CronTab(crontab))
             logging.info("->- Process Start")
+
+            MIN_AVG_PING = 1000
+            server_rank = {}
+            valid_server_list = []
+            server_st_archive = {}
+            olympics_serverid_list = []
+
             while True:
                 try:
                     # 次実行日時を表示
@@ -91,13 +98,105 @@ def job_controller(crontab):
 
                     logging.info("-!> Job Start")
 
+                    if len(server_rank.keys()) < len(candidate_server_list):
+                        server_list_ = []
+                        for server in candidate_server_list:
+                            serverid = server[1]
+                            server_ping_list = server_rank.get(serverid, [])
+                            strargs = (serverid, server_ping_list, )
+                            if len(server_ping_list) < 3:
+                                print('serverid = %r needs to be bootstrapped (pings = %r)' % strargs)
+                                server_list_.append(server)
+                            else:
+                                print('serverid = %r is bootstrapped (pings = %r)' % strargs)
+                        print('Bootstrapping with server_list_ = %r' % (server_list_, ))
+                    elif len(valid_server_list) > 0 and random.uniform(0.0, 0.1):
+                        server_list_ = valid_server_list
+                        print('Random selection (p=0.1) with server_list_ = %r' % (server_list_, ))
+                    else:
+                        print('Ranking with server_rank = %r' % (server_rank, ))
+                        print('Picking 5 best servers from candidates with lowest average ping')
+                        valid_ping_list = []
+                        for serverid in server_rank:
+                            server_ping_list = server_rank.get(serverid, [])
+                            while len(server_ping_list) < 3:
+                                server_ping_list.append(0)
+                            server_ping_list = server_ping_list[-3:]
+                            avg_ping = sum(server_ping_list) / len(server_ping_list)
+                            if avg_ping <= MIN_AVG_PING:
+                                valid_ping_list.append((avg_ping, serverid))
+                            server_rank[serverid] = server_ping_list
+
+                        valid_ping_list = sorted(valid_ping_list)
+                        print('valid_ping_list = %r' % (valid_ping_list, ))
+                        valid_serverid_list = [value[1] for value in valid_ping_list]
+                        num = min(len(valid_serverid_list), 5)
+                        fastest_serverid_list = valid_serverid_list[:num]
+                        print('fastest_serverid_list = %r' % (fastest_serverid_list, ))
+
+                        if len(fastest_serverid_list) == 5:
+                            # Exclude fastest and slowest from top 5 pings
+                            olympics_serverid_list = fastest_serverid_list[1:-1]
+                        else:
+                            olympics_serverid_list = []
+                        print('Updated olympics_serverid_list = %r' % (olympics_serverid_list, ))
+
+                        valid_server_list = []
+                        server_list_ = []
+                        for server in candidate_server_list:
+                            serverid = server[1]
+                            if serverid in valid_serverid_list:
+                                valid_server_list.append(server)
+                            if serverid in fastest_serverid_list:
+                                server_list_.append(server)
+                        print('Updated valid_server_list = %r' % (valid_server_list, ))
+                        print('Ranked selection with server_list_ = %r' % (server_list_, ))
+
                     # 処理を実行する。
-                    job()
+                    server_list = server_list_[:]
+                    # print('Sending server_list = %r' % (server_list, ))
+                    serverid, st_json = job(server_list)
+
+                    # Update rank
+                    try:
+                        ping = st_json['ping']
+                        ping = float(ping)
+                        if serverid not in server_rank:
+                            server_rank[serverid] = []
+                        server_rank[serverid].append(ping)
+                        print('Updated server_rank[%s] = %r' % (serverid, server_rank[serverid], ))
+
+                        # overwrite latest version
+                        server_st_archive[serverid] = st_json
+                        print('Updated server_st_archive[%s]' % (serverid, ))
+                    except:
+                        pass
+
+                    key_list = ['download', 'upload', 'bytes_received', 'bytes_sent', 'ping']
+                    st_json = {key: [] for key in key_list}
+                    print('Using olympics_serverid_list = %r' % (olympics_serverid_list, ))
+                    for olympics_serverid in olympics_serverid_list:
+                        st_json_ = server_st_archive[olympics_serverid]
+                        for key in key_list:
+                            st_json[key].append(st_json_[key])
+
+                    for key in key_list:
+                        value_list = st_json[key]
+                        while len(value_list) < 3:
+                            value_list.append(0)
+                        st_json[key] = sum(value_list) / len(value_list)
+
+                    print('Updated olympics info = %r' % (st_json, ))
+                    speedtest_download_bits.labels(serverid='olympics').set(st_json['download'])
+                    speedtest_upload_bits.labels(serverid='olympics').set(st_json['upload'])
+                    speedtest_download_bytes.labels(serverid='olympics').set(st_json['bytes_received'])
+                    speedtest_upload_bytes.labels(serverid='olympics').set(st_json['bytes_sent'])
+                    speedtest_ping.labels(serverid='olympics').set(st_json['ping'])
 
                     logging.info("-!< Job Done")
-
                 except KeyboardInterrupt:
                     break
+
             logging.info("-<- Process Done.")
 
         return wrapper
@@ -204,7 +303,7 @@ speedtest_up = Gauge(
 )
 
 logging.info('Getting closest 10 servers (by distance)')
-server_list = []
+candidate_server_list = []
 try:
     logging.info('Running speedtest-cli subprocess.')
 
@@ -223,17 +322,17 @@ try:
                 distance = line[-2]
                 serverid = serverid.strip(')').strip()
                 distance = distance.strip('[').strip()
-                serverid = int(serverid)
+                serverid = str(int(serverid))
                 distance = float(distance)
                 valid = True
             except:
                 valid = False
             if valid:
                 server = (distance, serverid, )
-                server_list.append(server)
-        server_list = sorted(server_list)
-        server_list = server_list[:10]
-        logging.info('Using server list: %r' % (server_list, ))
+                candidate_server_list.append(server)
+        candidate_server_list = sorted(candidate_server_list)
+        candidate_server_list = candidate_server_list[:10]
+        logging.info('Using candidate server list: %r' % (candidate_server_list, ))
     except:
         pass
 except:
@@ -241,7 +340,7 @@ except:
 
 
 @job_controller(args.interval)
-def job1():
+def job1(server_list):
     u"""
     処理1
     """
@@ -251,6 +350,7 @@ def job1():
         serverid = str(args.server)
 
         if serverid == 'random':
+            # print('Received server_list = %r' % (server_list, ))
             if len(server_list) == 0:
                 serverid = ''
             else:
@@ -320,6 +420,8 @@ def job1():
         speedtest_download_bytes.labels(serverid=serverid_).set(st_json['bytes_received'])
         speedtest_upload_bytes.labels(serverid=serverid_).set(st_json['bytes_sent'])
         speedtest_ping.labels(serverid=serverid_).set(st_json['ping'])
+
+    return serverid, st_json
 
 
 def main():
