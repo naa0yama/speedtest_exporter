@@ -314,11 +314,12 @@ def job1():
     serverid = str(st_json['server']['id'])
     logging.info('Used serverid = %r' % (serverid, ))
 
-    speedtest_download_bits.labels(serverid=serverid).set(st_json['download'])
-    speedtest_upload_bits.labels(serverid=serverid).set(st_json['upload'])
-    speedtest_download_bytes.labels(serverid=serverid).set(st_json['bytes_received'])
-    speedtest_upload_bytes.labels(serverid=serverid).set(st_json['bytes_sent'])
-    speedtest_ping.labels(serverid=serverid).set(st_json['ping'])
+    for serverid_ in ['*', serverid]:
+        speedtest_download_bits.labels(serverid=serverid_).set(st_json['download'])
+        speedtest_upload_bits.labels(serverid=serverid_).set(st_json['upload'])
+        speedtest_download_bytes.labels(serverid=serverid_).set(st_json['bytes_received'])
+        speedtest_upload_bytes.labels(serverid=serverid_).set(st_json['bytes_sent'])
+        speedtest_ping.labels(serverid=serverid_).set(st_json['ping'])
 
 
 def main():
