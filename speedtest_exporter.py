@@ -98,63 +98,64 @@ def job_controller(crontab):
 
                     logging.info("-!> Job Start")
 
-                    if len(server_rank.keys()) < len(candidate_server_list):
-                        server_list_ = []
-                        for server in candidate_server_list:
-                            serverid = server[1]
-                            server_ping_list = server_rank.get(serverid, [])
-                            strargs = (serverid, server_ping_list, )
-                            if len(server_ping_list) < 3:
-                                print('serverid = %r needs to be bootstrapped (pings = %r)' % strargs)
-                                server_list_.append(server)
-                            else:
-                                print('serverid = %r is bootstrapped (pings = %r)' % strargs)
-                        print('Bootstrapping with server_list_ = %r' % (server_list_, ))
-                    elif len(valid_server_list) > 0 and random.uniform(0.0, 0.1):
-                        server_list_ = valid_server_list
-                        print('Random selection (p=0.1) with server_list_ = %r' % (server_list_, ))
-                    else:
-                        print('Ranking with server_rank = %r' % (server_rank, ))
-                        print('Picking 5 best servers from candidates with lowest average ping')
-                        valid_ping_list = []
-                        for serverid in server_rank:
-                            server_ping_list = server_rank.get(serverid, [])
-                            while len(server_ping_list) < 3:
-                                server_ping_list.append(0)
-                            server_ping_list = server_ping_list[-3:]
-                            avg_ping = sum(server_ping_list) / len(server_ping_list)
-                            if avg_ping <= MIN_AVG_PING:
-                                valid_ping_list.append((avg_ping, serverid))
-                            server_rank[serverid] = server_ping_list
-
-                        valid_ping_list = sorted(valid_ping_list)
-                        print('valid_ping_list = %r' % (valid_ping_list, ))
-                        valid_serverid_list = [value[1] for value in valid_ping_list]
-                        num = min(len(valid_serverid_list), 5)
-                        fastest_serverid_list = valid_serverid_list[:num]
-                        print('fastest_serverid_list = %r' % (fastest_serverid_list, ))
-
-                        if len(fastest_serverid_list) == 5:
-                            # Exclude fastest and slowest from top 5 pings
-                            olympics_serverid_list = fastest_serverid_list[1:-1]
+                    server_list_ = []
+                    for server in candidate_server_list:
+                        serverid = server[1]
+                        server_ping_list = server_rank.get(serverid, [])
+                        strargs = (serverid, server_ping_list, )
+                        if len(server_ping_list) < 3:
+                            logging.info('serverid = %r needs to be bootstrapped (pings = %r)' % strargs)
+                            server_list_.append(server)
                         else:
-                            olympics_serverid_list = []
-                        print('Updated olympics_serverid_list = %r' % (olympics_serverid_list, ))
+                            logging.info('serverid = %r is bootstrapped (pings = %r)' % strargs)
+                    logging.info('Bootstrapping with server_list_ = %r' % (server_list_, ))
 
-                        valid_server_list = []
-                        server_list_ = []
-                        for server in candidate_server_list:
-                            serverid = server[1]
-                            if serverid in valid_serverid_list:
-                                valid_server_list.append(server)
-                            if serverid in fastest_serverid_list:
-                                server_list_.append(server)
-                        print('Updated valid_server_list = %r' % (valid_server_list, ))
-                        print('Ranked selection with server_list_ = %r' % (server_list_, ))
+                    if len(server_list_) == 0:
+                        if len(valid_server_list) > 0 and random.uniform(0.0, 0.1):
+                            server_list_ = valid_server_list
+                            logging.info('Random selection (p=0.1) with server_list_ = %r' % (server_list_, ))
+                        else:
+                            logging.info('Ranking with server_rank = %r' % (server_rank, ))
+                            logging.info('Picking 5 best servers from candidates with lowest average ping')
+                            valid_ping_list = []
+                            for serverid in server_rank:
+                                server_ping_list = server_rank.get(serverid, [])
+                                while len(server_ping_list) < 3:
+                                    server_ping_list.append(0)
+                                server_ping_list = server_ping_list[-3:]
+                                avg_ping = sum(server_ping_list) / len(server_ping_list)
+                                if avg_ping <= MIN_AVG_PING:
+                                    valid_ping_list.append((avg_ping, serverid))
+                                server_rank[serverid] = server_ping_list
+
+                            valid_ping_list = sorted(valid_ping_list)
+                            logging.info('valid_ping_list = %r' % (valid_ping_list, ))
+                            valid_serverid_list = [value[1] for value in valid_ping_list]
+                            num = min(len(valid_serverid_list), 5)
+                            fastest_serverid_list = valid_serverid_list[:num]
+                            logging.info('fastest_serverid_list = %r' % (fastest_serverid_list, ))
+
+                            if len(fastest_serverid_list) == 5:
+                                # Exclude fastest and slowest from top 5 pings
+                                olympics_serverid_list = fastest_serverid_list[1:-1]
+                            else:
+                                olympics_serverid_list = []
+                            logging.info('Updated olympics_serverid_list = %r' % (olympics_serverid_list, ))
+
+                            valid_server_list = []
+                            server_list_ = []
+                            for server in candidate_server_list:
+                                serverid = server[1]
+                                if serverid in valid_serverid_list:
+                                    valid_server_list.append(server)
+                                if serverid in fastest_serverid_list:
+                                    server_list_.append(server)
+                            logging.info('Updated valid_server_list = %r' % (valid_server_list, ))
+                            logging.info('Ranked selection with server_list_ = %r' % (server_list_, ))
 
                     # 処理を実行する。
                     server_list = server_list_[:]
-                    # print('Sending server_list = %r' % (server_list, ))
+                    # logging.info('Sending server_list = %r' % (server_list, ))
                     serverid, st_json = job(server_list)
 
                     # Update rank
@@ -164,17 +165,17 @@ def job_controller(crontab):
                         if serverid not in server_rank:
                             server_rank[serverid] = []
                         server_rank[serverid].append(ping)
-                        print('Updated server_rank[%s] = %r' % (serverid, server_rank[serverid], ))
+                        logging.info('Updated server_rank[%s] = %r' % (serverid, server_rank[serverid], ))
 
                         # overwrite latest version
                         server_st_archive[serverid] = st_json
-                        print('Updated server_st_archive[%s]' % (serverid, ))
+                        logging.info('Updated server_st_archive[%s]' % (serverid, ))
                     except:
                         pass
 
                     key_list = ['download', 'upload', 'bytes_received', 'bytes_sent', 'ping']
                     st_json = {key: [] for key in key_list}
-                    print('Using olympics_serverid_list = %r' % (olympics_serverid_list, ))
+                    logging.info('Using olympics_serverid_list = %r' % (olympics_serverid_list, ))
                     for olympics_serverid in olympics_serverid_list:
                         st_json_ = server_st_archive[olympics_serverid]
                         for key in key_list:
@@ -186,7 +187,7 @@ def job_controller(crontab):
                             value_list.append(0)
                         st_json[key] = sum(value_list) / len(value_list)
 
-                    print('Updated olympics info = %r' % (st_json, ))
+                    logging.info('Updated olympics info = %r' % (st_json, ))
                     speedtest_download_bits.labels(serverid='olympics').set(st_json['download'])
                     speedtest_upload_bits.labels(serverid='olympics').set(st_json['upload'])
                     speedtest_download_bytes.labels(serverid='olympics').set(st_json['bytes_received'])
@@ -350,7 +351,7 @@ def job1(server_list):
         serverid = str(args.server)
 
         if serverid == 'random':
-            # print('Received server_list = %r' % (server_list, ))
+            # logging.info('Received server_list = %r' % (server_list, ))
             if len(server_list) == 0:
                 serverid = ''
             else:
