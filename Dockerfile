@@ -1,18 +1,31 @@
-FROM python:3.6-alpine
+FROM python:3.8-bullseye
 
-LABEL maintainer "Naoki Aoyama<n.aoyama@homesoc.io>" \
-      Description="speedtest_exporter docker image" \
-      Vendor="HomeSOC Organization" \
-      Version="1.1"
+LABEL maintainer "Naoki Aoyama" \
+  Description="speedtest_exporter docker image"
 
-RUN mkdir -p               /opt/speedtest_exporter
-ADD speedtest_exporter.py  /opt/speedtest_exporter
-ADD requirements.txt       /opt/speedtest_exporter
+# tzdata
+ENV DEBIAN_FRONTEND=noninteractive
+
+ARG UID=1001
+RUN useradd -m -u ${UID} speedtest
+WORKDIR /home/speedtest
 
 RUN \
-     pip3 install -r /opt/speedtest_exporter/requirements.txt
+  curl -s https://install.speedtest.net/app/cli/install.deb.sh | bash \
+  && apt-get install speedtest
 
-USER       nobody
-EXPOSE     9353/tcp
-WORKDIR    /opt/speedtest_exporter
-ENTRYPOINT [ "python3", "speedtest_exporter.py" ]
+USER ${UID}
+RUN mkdir -p                     /home/speedtest
+ADD src/                         /home/speedtest
+ADD pyproject.toml               /home/speedtest
+
+RUN \
+  curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+ENV PATH $PATH:/home/speedtest/.poetry/bin
+
+RUN \
+  poetry export --without-hashes -f requirements.txt -o requirements.txt
+RUN pip3 install -r requirements.txt
+
+EXPOSE 9353/tcp
+ENTRYPOINT [ "python3", "/home/speedtest/speedtest/exporter.py" ]

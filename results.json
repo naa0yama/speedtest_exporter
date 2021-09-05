@@ -1,34 +1,40 @@
 {
-  "client": {
-    "rating": "0",
-    "loggedin": "0",
-    "isprating": "3.7",
-    "ispdlavg": "0",
-    "ip": "126.225.90.142",
-    "isp": "Softbank BB",
-    "lon": "139.7514",
-    "ispulavg": "0",
-    "country": "JP",
-    "lat": "35.685"
+  "type": "result",
+  "timestamp": "2021-09-05T09:15:45Z",
+  "ping": {
+    "jitter": 5.2919999999999998,
+    "latency": 39.283000000000001
   },
-  "bytes_sent": 5242880,
-  "download": 5649262.632440399,
-  "timestamp": "2018-07-27T13:14:21.782347Z",
-  "share": null,
-  "bytes_received": 7203980,
-  "ping": 45.007,
-  "upload": 3279752.8049338055,
+  "download": {
+    "bandwidth": 5167464,
+    "bytes": 70585024,
+    "elapsed": 15002
+  },
+  "upload": {
+    "bandwidth": 490420,
+    "bytes": 5121576,
+    "elapsed": 10315
+  },
+  "packetLoss": 0,
+  "isp": "NTT Docomo",
+  "interface": {
+    "internalIp": "192.168.100.108",
+    "name": "eth1",
+    "macAddr": "01:00:5E:90:10:01",
+    "isVpn": false,
+    "externalIp": "1.75.224.61"
+  },
   "server": {
-    "latency": 45.007,
-    "name": "Bunkyo",
-    "url": "http://speed.coe.ad.jp/upload.php",
+    "id": 24333,
+    "name": "Rakuten Mobile, Inc",
+    "location": "Tokyo",
     "country": "Japan",
-    "lon": "139.7522",
-    "cc": "JP",
-    "host": "speed.coe.ad.jp:8080",
-    "sponsor": "IPA CyberLab",
-    "lat": "35.7081",
-    "id": "14623",
-    "d": 2.569618530339375
+    "host": "ookla.mbspeed.net",
+    "port": 8080,
+    "ip": "103.124.1.250"
+  },
+  "result": {
+    "id": "f3674660-d139-4cd3-893e-8170c8f65c0e",
+    "url": "https://www.speedtest.net/result/c/f3674660-d139-4cd3-893e-8170c8f65c0e"
   }
 }
