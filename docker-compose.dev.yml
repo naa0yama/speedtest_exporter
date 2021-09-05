@@ -4,7 +4,7 @@ services:
   speedtest_exporter:
     ports:
       - 9353:9353/tcp
-    image: foxboxsnet/speedtest_exporter:latest
+    image: ghcr.io/naa0yama/speedtest_exporter:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -14,16 +14,16 @@ services:
   prom:
     image: quay.io/prometheus/prometheus:latest
     volumes:
-     - ./prometheus.sample.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus.sample.yml:/etc/prometheus/prometheus.yml
     command: "--config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus"
     ports:
-     - 9090:9090
+      - 9090:9090
     depends_on:
-     - speedtest_exporter
+      - speedtest_exporter
 
   grafana:
     image: grafana/grafana
     ports:
-     - "3000:3000"
+      - "3000:3000"
     depends_on:
       - prom
