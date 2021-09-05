@@ -2,6 +2,7 @@ version: "3"
 
 services:
   speedtest_exporter:
+    restart: always
     ports:
       - 9353:9353/tcp
     image: ghcr.io/naa0yama/speedtest_exporter:v0.1.0
