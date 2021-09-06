@@ -170,8 +170,6 @@ speedtest_download_bits_per_second = Gauge(
     "Speedtest current Download Speed in bit/s",
     [
         "isp",
-        "internalIp",
-        "externalIp",
         "server_id",
         "server_name",
         "server_location",
@@ -184,8 +182,6 @@ speedtest_upload_bits_per_second = Gauge(
     "Speedtest current Upload speed in bits/s",
     [
         "isp",
-        "internalIp",
-        "externalIp",
         "server_id",
         "server_name",
         "server_location",
@@ -198,8 +194,6 @@ speedtest_jitter_latency_milliseconds = Gauge(
     "Speedtest current Jitter in ms",
     [
         "isp",
-        "internalIp",
-        "externalIp",
         "server_id",
         "server_name",
         "server_location",
@@ -212,8 +206,6 @@ speedtest_ping_latency_milliseconds = Gauge(
     "Speedtest current Ping in ms",
     [
         "isp",
-        "internalIp",
-        "externalIp",
         "server_id",
         "server_name",
         "server_location",
@@ -313,8 +305,6 @@ def job1() -> None:
 
     speedtest_download_bits_per_second.labels(
         st_json["isp"],
-        st_json["interface"]["internalIp"],
-        st_json["interface"]["externalIp"],
         st_json["server"]["id"],
         st_json["server"]["name"],
         st_json["server"]["location"],
@@ -323,8 +313,6 @@ def job1() -> None:
 
     speedtest_upload_bits_per_second.labels(
         st_json["isp"],
-        st_json["interface"]["internalIp"],
-        st_json["interface"]["externalIp"],
         st_json["server"]["id"],
         st_json["server"]["name"],
         st_json["server"]["location"],
@@ -333,8 +321,6 @@ def job1() -> None:
 
     speedtest_jitter_latency_milliseconds.labels(
         st_json["isp"],
-        st_json["interface"]["internalIp"],
-        st_json["interface"]["externalIp"],
         st_json["server"]["id"],
         st_json["server"]["name"],
         st_json["server"]["location"],
@@ -343,8 +329,6 @@ def job1() -> None:
 
     speedtest_ping_latency_milliseconds.labels(
         st_json["isp"],
-        st_json["interface"]["internalIp"],
-        st_json["interface"]["externalIp"],
         st_json["server"]["id"],
         st_json["server"]["name"],
         st_json["server"]["location"],

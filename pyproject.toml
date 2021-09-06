@@ -1,6 +1,6 @@
 [tool.poetry]
 name                       = "speedtest"
-version                    = "0.1.0"
+version                    = "0.2.0"
 description                = "Prometheus Speedtest Exporter"
 authors                    = [
     "Naoki Aoyama"
