@@ -36,7 +36,7 @@ mypy                       = "~0.812"
 pip                        = "^21.0.0"
 pytest                     = "~6.2.2"
 pytest-cov                 = "~2.12.0"
-tox                        = "~3.24.0"
+tox                        = "~3.25.0"
 
 [tool.black]
 line-length                = 99
