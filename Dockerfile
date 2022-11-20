@@ -1,4 +1,4 @@
-FROM python:3.8-bullseye
+FROM python:3.11-bullseye
 
 LABEL maintainer "Naoki Aoyama" \
   Description="speedtest_exporter docker image"
