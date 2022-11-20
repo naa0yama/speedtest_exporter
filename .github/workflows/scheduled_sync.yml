@@ -44,16 +44,16 @@ jobs:
       ORIGIN_DEFAULT_BRUNCH: main
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2.2.2
+        uses: actions/setup-python@v4.3.0
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Cache Python
         id: python_cache_id
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ env.pythonLocation }}
           key: python-${{ env.pythonLocation }}-v${{ matrix.python-version }}-deps-${{ hashFiles(format('{0}{1}', github.workspace, '/.github/workflows/projmr/poetry.lock')) }}
@@ -143,7 +143,7 @@ jobs:
           git push -u origin "${BRUNCH_NAME}"
 
       - name: Create PullRequest
-        uses: actions/github-script@v4
+        uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
